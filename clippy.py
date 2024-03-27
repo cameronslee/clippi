@@ -95,13 +95,22 @@ def main():
 
     # generate output
 
-    url = "https://www.youtube.com/watch?v=WkLvpxImRGw"
-    transcript = get_transcript(parse_url(url))
+    if len(sys.argv) < 2:
+        usage()
+        exit(1)
 
-    for i in transcript:
-        print(i)
+    cmd = sys.argv[1]
 
-    return
+    match cmd:
+        case "-h":
+            usage()
+        case "--help":
+            usage()
+        case "transcript":
+            transcript = get_transcript(parse_url(url))
+
+            for i in transcript:
+                print(i)
 
 if __name__ == "__main__":
     main()
