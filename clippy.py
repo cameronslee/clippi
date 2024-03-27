@@ -12,6 +12,8 @@
 #
 # Clippy - A utility for tokenizing moments of interest in videos
 
+from youtube_transcript_api import YouTubeTranscriptApi
+
 ### === Helpers === ###
 # Create file and set timestamp
 def touch(path):
@@ -26,6 +28,10 @@ def mkdir(path):
 
     perror("path already exists")
     return
+
+# TODO overload func with list of video_ids as well as lang of transcript
+def get_transcript(video_id):
+    YouTubeTranscriptApi.get_transcript(video_id)
 
 def init():
     # setup file directory for transcripts

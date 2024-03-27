@@ -8,6 +8,7 @@ if [ ! -d "$VENV_DIR" ]; then
     echo "Virtual environment created."
 else
     echo "Virtual environment found. Activating..."
-fi
 
 source .venv/bin/activate
+fi
+
