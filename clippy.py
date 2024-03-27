@@ -14,6 +14,19 @@
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
+### === Prompts === ###
+tokenize_prompt = """
+        foobar
+    """
+
+get_description_prompt = """
+        barfoo
+    """
+
+### === Error Handles === ###
+def perror(msg):
+    print("error: " + msg)
+
 ### === Helpers === ###
 # Create file and set timestamp
 def touch(path):
@@ -31,11 +44,43 @@ def mkdir(path):
 
 # TODO overload func with list of video_ids as well as lang of transcript
 def get_transcript(video_id):
-    YouTubeTranscriptApi.get_transcript(video_id)
+    res = YouTubeTranscriptApi.get_transcript(video_id)
+
+    return res
 
 def init():
     # setup file directory for transcripts
     pass
+
+def tokenize(transcript):
+    pass
+
+# Usage message 
+usage_string = """
+usage: clippy [-h | --help] <command> [<args>] 
+
+commands:
+get transcript 
+   transcript <video-url>         Stage changes to cache
+"""
+
+def usage(msg=""):
+    print(usage_string)
+
+    if msg != "":
+        print(msg)
+
+# returns the ID of the video 
+def parse_url(url):
+    i = url.rfind('=')
+    # Slice the string up to that index
+    res = url[i+1:] if i != -1 else i 
+
+    if i == -1:
+        perror("unable to retrieve video ID")
+        exit(1)
+
+    return res
 
 ### === Driver === ###
 def main():
@@ -50,7 +95,13 @@ def main():
 
     # generate output
 
-    pass
+    url = "https://www.youtube.com/watch?v=WkLvpxImRGw"
+    transcript = get_transcript(parse_url(url))
+
+    for i in transcript:
+        print(i)
+
+    return
 
 if __name__ == "__main__":
     main()

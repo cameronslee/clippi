@@ -22,9 +22,8 @@ A tool for tokenizing moments of interest in videos
 - This will involve a reduce algorithm that can squash nodes (containing a "topic" embedding)
 
 # Stretch goals:
+- video analyzing (for clips where speech is not the deciding factor for a clip being of interest)
 - ui 
 - highlight video generator
 - auto upload
-
-
 
