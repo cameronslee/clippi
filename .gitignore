@@ -1,0 +1,8 @@
+# Build it yourself!
+
+transcripts/
+build/
+dist/
+clippy.spec
+.venv/
+
