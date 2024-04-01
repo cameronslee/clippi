@@ -13,6 +13,13 @@
 # Clippy - A utility for tokenizing moments of interest in videos
 
 from youtube_transcript_api import YouTubeTranscriptApi
+import os
+import sys
+
+### === PATHS === ###
+CWD = os.getcwd()
+TRANSCRIPTS_DIR = CWD + "/transcripts/"
+
 
 ### === Prompts === ###
 tokenize_prompt = """
@@ -48,9 +55,11 @@ def get_transcript(video_id):
 
     return res
 
-def init():
+def setup():
     # setup file directory for transcripts
-    pass
+    mkdir(TRANSCRIPTS_DIR)
+    print("clippy: setup complete")
+
 
 def tokenize(transcript):
     pass
@@ -85,6 +94,7 @@ def parse_url(url):
 ### === Driver === ###
 def main():
     # setup
+    setup()
 
     # call endpoint for transcript
 
