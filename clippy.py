@@ -16,18 +16,29 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import os
 import sys
 
+### === GLOBALS === ###
+
+
 ### === PATHS === ###
 CWD = os.getcwd()
 TRANSCRIPTS_DIR = CWD + "/transcripts/"
 
-
 ### === Prompts === ###
 tokenize_prompt = """
-        foobar
+    Description TODO
+
+    Args:
+
+
+    Returns:
     """
 
 get_description_prompt = """
-        barfoo
+    Description TODO
+
+    Args:
+
+    Returns:
     """
 
 ### === Error Handles === ###
@@ -49,36 +60,6 @@ def mkdir(path):
     perror("path already exists")
     return
 
-# TODO overload func with list of video_ids as well as lang of transcript
-def get_transcript(video_id):
-    res = YouTubeTranscriptApi.get_transcript(video_id)
-
-    return res
-
-def setup():
-    # setup file directory for transcripts
-    mkdir(TRANSCRIPTS_DIR)
-    print("clippy: setup complete")
-
-
-def tokenize(transcript):
-    pass
-
-# Usage message 
-usage_string = """
-usage: clippy [-h | --help] <command> [<args>] 
-
-commands:
-get transcript 
-   transcript <video-url>         Stage changes to cache
-"""
-
-def usage(msg=""):
-    print(usage_string)
-
-    if msg != "":
-        print(msg)
-
 # returns the ID of the video 
 def parse_url(url):
     i = url.rfind('=')
@@ -91,7 +72,81 @@ def parse_url(url):
 
     return res
 
+### === Transcript Handles === ###
+
+# TODO overload func with list of video_ids as well as lang of transcript
+# This function needs to follow the following edge cases:
+#           generated and manual transcripts (keep track of stream chat/ chat from other platforms
+#           no transcript available - perror and return to the user
+def get_transcript(video_id):
+    transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+
+    if transcript_list == None:
+        perror("get_transcript() unable to fetch transcript for id: " + video_id)
+        exit(1)
+
+    transcript_manual = transcript_list.find_manually_created_transcript(['en']).fetch()
+    for i in transcript_manual:
+        print(i)
+    transcript_generated = transcript_list.find_generated_transcript(['en']).fetch()
+    for i in transcript_generated:
+        print(i)
+    return transcript_generated
+
+
+# compress each transcript translation by timestamp 
+# returns a dictionary of transcripts
+# Coalescing done by simple sliding window with a seek ahead node
+def transcript_compress():
+    # TODO test and refactor prompt engineering 
+    compress_prompt = """
+    Given a list of transcript entries, compress the list where the 'text' entry lines up with the ones that follow and can be assigned a subject.
+
+    Args:
+
+        transcript (list): A list of dictionaries where each entry contains 'text', 'start', and 'duration'. Each of these entries make up a timestamp in the transcript
+
+        tags (str): A list of tags that help to describe the video. Optional
+
+        restraints (str): A list of restraints to help filter out noise. Optional
+
+        ai_model (str): The AI model to use for natural language processing
+
+    Returns:
+
+        dict: A result of 
+
+    """
+    pass
+
+# Assign weights to each of the nodes in the transcript.
+# at this point, the transcript should be "compressed" at this point
+def tokenize(transcript):
+    pass
+
 ### === Driver === ###
+# Usage message 
+usage_string = """
+usage: clippy [-h | --help] <command> [<args>] 
+
+commands:
+get transcript 
+   transcript <video-url> [-s]        Stage changes to cache. 
+      -s : saves the file to the transcripts directory 
+"""
+
+def usage(msg=""):
+    print(usage_string)
+
+    if msg != "":
+        print(msg)
+
+# Sets up clippy
+def setup():
+    # setup file directory for transcripts
+    mkdir(TRANSCRIPTS_DIR)
+    print("clippy: setup complete")
+
 def main():
     # setup
     setup()
@@ -117,10 +172,32 @@ def main():
         case "--help":
             usage()
         case "transcript":
-            transcript = get_transcript(parse_url(url))
+            '''
+            if len(sys.argv) == 4:
+                arg1 = sys.argv[2]
+                if arg1 == '-s':
+                    # write t transcript file
+                    
+                else: 
+                    # print the usage for the flags on the transcript command 
+                    # refactor for just the usage of the transcript file
+                    usage()
+            '''
 
-            for i in transcript:
-                print(i)
+            TEST_URL = "https://www.youtube.com/watch?v=Y-0yZ1AHb0s"
+            curr_id = parse_url(TEST_URL)
+            transcript = get_transcript(curr_id)
+
+            # TODO consider refactoring into a pandas dataframe
+
+            # Write to file
+            new_file = TRANSCRIPTS_DIR + curr_id
+            with open(new_file, 'w') as f:
+                for t in transcript:
+                    f.write(str(t)+'\n')
+                f.close()
+
+            assert os.path.isfile(new_file), perror("could not write" + curr_id + "to file")
 
 if __name__ == "__main__":
     main()
