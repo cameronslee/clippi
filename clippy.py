@@ -100,7 +100,9 @@ def get_transcript(video_id):
 def transcript_compress():
     # TODO test and refactor prompt engineering 
     compress_prompt = """
-    Given a list of transcript entries, compress the list where the 'text' entry lines up with the ones that follow and can be assigned a subject.
+    Given a transcript for a video in the form of a list where each entry is a dictionary containing information at a specific
+    timestamp in the video, return a list where the entries are combined if they are relatedd and given a description as an 
+    additional field in the entry.
 
     Args:
 
@@ -110,11 +112,11 @@ def transcript_compress():
 
         restraints (str): A list of restraints to help filter out noise. Optional
 
-        ai_model (str): The AI model to use for natural language processing
+        ai_model (str): The AI model to use for natural language processing. Optional, will use default if not provided
 
     Returns:
 
-        dict: A result of 
+        transcript (list): the compressed list of dictionaries where each entry contains text, start, duration and description.
 
     """
     pass
