@@ -27,3 +27,24 @@ A tool for tokenizing moments of interest in videos
 - highlight video generator
 - auto upload
 
+## Usage
+activate virtual environment
+```
+λ source ./activate.sh
+```
+
+build packages
+```
+λ ./build.sh
+```
+
+run
+```
+λ python3 clippy.py 
+
+# for distribution build
+λ cd build/dist
+λ ./clippy <args>
+```
+
+
