@@ -10,3 +10,9 @@ notes.md
 
 # data
 out.csv
+
+output_data/
+input_data/
+staged_data/
+
+.DS_Store

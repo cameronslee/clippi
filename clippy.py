@@ -16,30 +16,9 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import os
 import sys
 
-### === GLOBALS === ###
-
-
 ### === PATHS === ###
 CWD = os.getcwd()
 TRANSCRIPTS_DIR = CWD + "/transcripts/"
-
-### === Prompts === ###
-tokenize_prompt = """
-    Description TODO
-
-    Args:
-
-
-    Returns:
-    """
-
-get_description_prompt = """
-    Description TODO
-
-    Args:
-
-    Returns:
-    """
 
 ### === Error Handles === ###
 def perror(msg):
@@ -88,43 +67,13 @@ def get_transcript(video_id):
     transcript_manual = transcript_list.find_manually_created_transcript(['en']).fetch()
     for i in transcript_manual:
         print(i)
+
     transcript_generated = transcript_list.find_generated_transcript(['en']).fetch()
     for i in transcript_generated:
         print(i)
+
     return transcript_generated
 
-
-# compress each transcript translation by timestamp 
-# returns a dictionary of transcripts
-# Coalescing done by simple sliding window with a seek ahead node
-def transcript_compress():
-    # TODO test and refactor prompt engineering 
-    compress_prompt = """
-    Given a transcript for a video in the form of a list where each entry is a dictionary containing information at a specific
-    timestamp in the video, return a list where the entries are combined if they are relatedd and given a description as an 
-    additional field in the entry.
-
-    Args:
-
-        transcript (list): A list of dictionaries where each entry contains 'text', 'start', and 'duration'. Each of these entries make up a timestamp in the transcript
-
-        tags (str): A list of tags that help to describe the video. Optional
-
-        restraints (str): A list of restraints to help filter out noise. Optional
-
-        ai_model (str): The AI model to use for natural language processing. Optional, will use default if not provided
-
-    Returns:
-
-        transcript (list): the compressed list of dictionaries where each entry contains text, start, duration and description.
-
-    """
-    pass
-
-# Assign weights to each of the nodes in the transcript.
-# at this point, the transcript should be "compressed" at this point
-def tokenize(transcript):
-    pass
 
 ### === Driver === ###
 # Usage message 
@@ -147,20 +96,11 @@ def usage(msg=""):
 def setup():
     # setup file directory for transcripts
     mkdir(TRANSCRIPTS_DIR)
+    mkdir(TRANSCRIPTS_DIR)
     print("clippy: setup complete")
 
 def main():
-    # setup
     setup()
-
-    # call endpoint for transcript
-
-    # build embedding table for weighting the transcripts
-    # each timestamp will represent a node 
-
-    # prompt - call create_descriptions() or create_embeddings() 
-
-    # generate output
 
     if len(sys.argv) < 2:
         usage()
@@ -174,23 +114,13 @@ def main():
         case "--help":
             usage()
         case "transcript":
-            '''
-            if len(sys.argv) == 4:
-                arg1 = sys.argv[2]
-                if arg1 == '-s':
-                    # write t transcript file
-                    
-                else: 
-                    # print the usage for the flags on the transcript command 
-                    # refactor for just the usage of the transcript file
-                    usage()
-            '''
+            if sys.argc != 2:
+                usage()
+                exit(1)
 
-            TEST_URL = "https://www.youtube.com/watch?v=Y-0yZ1AHb0s"
-            curr_id = parse_url(TEST_URL)
+            TEST_URL = "https://www.youtube.com/watch?v=JN3KPFbWCy8"
+            curr_id = parse_url(sys.argv[2])
             transcript = get_transcript(curr_id)
-
-            # TODO consider refactoring into a pandas dataframe
 
             # Write to file
             new_file = TRANSCRIPTS_DIR + curr_id
