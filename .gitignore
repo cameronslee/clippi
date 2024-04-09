@@ -7,3 +7,6 @@ clippy.spec
 .venv/
 
 notes.md
+
+# data
+out.csv
