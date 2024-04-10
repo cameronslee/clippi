@@ -3,6 +3,7 @@ import os
 import ast
 import pandas as pd
 from collections import Counter
+from tqdm import tqdm
 
 INPUT_DATA = "./input_data/"
 OUTPUT_DATA = "./output_data/"
@@ -13,15 +14,12 @@ def mkdir(path):
         os.makedirs(path)
         return path
 
-    print("path already exists")
-    return
-
 def setup_preprocessing():
     mkdir(INPUT_DATA)
     mkdir(OUTPUT_DATA)
     mkdir(STAGED_DATA)
 
-    print("preprocessing: setup complete")
+    return
 
 def read_transcript(path):
     f = open(path, "r") 
@@ -49,11 +47,9 @@ def to_dataframe(transcript):
 def preprocess(path_to_input_data):
     test_path = "./transcripts/JN3KPFbWCy8"
 
-
     transcript = read_transcript(path_to_input_data)
 
     df = to_dataframe(transcript)
-
 
     return df
 
@@ -99,7 +95,8 @@ def main():
         return [(ent.text, ent.start_char, ent.end_char, ent.label_) for ent in doc.ents]
 
     # assign entities
-    df['entities'] = df.apply(get_entity_values, axis=1)
+    tqdm.pandas(desc="Extracting entities")
+    df['entities'] = df.progress_apply(get_entity_values, axis=1)
 
     # drop all with no entities
     df = df[df['entities'].str.len() > 0]
@@ -114,7 +111,8 @@ def main():
     df['next_text'] = df['text'].shift(-1)
 
     # Calculate similarity (dropping the last row to avoid comparing with NaN)
-    df['similarity'] = df.iloc[:-1].apply(lambda row: calculate_similarity(row['text'], row['next_text']), axis=1)
+    tqdm.pandas(desc="Calculating similarity")
+    df['similarity'] = df.iloc[:-1].progress_apply(lambda row: calculate_similarity(row['text'], row['next_text']), axis=1)
 
     # Drop the 'next_text' column if no longer needed
     df.drop(columns=['next_text'], inplace=True)
@@ -166,6 +164,9 @@ def main():
     filename = OUTPUT_DATA+extracted_id+".csv"
     df.to_csv(filename, index=False)
     assert os.path.isfile(filename), "error: could not save preprocess data" 
+
+    print("preprocessing: complete")
+    print(df.info())
 
     return
 
