@@ -64,9 +64,9 @@ def get_transcript(video_id):
         perror("get_transcript() unable to fetch transcript for id: " + video_id)
         exit(1)
 
-    transcript_manual = transcript_list.find_manually_created_transcript(['en']).fetch()
-    for i in transcript_manual:
-        print(i)
+    #transcript_manual = transcript_list.find_manually_created_transcript(['en']).fetch()
+    #for i in transcript_manual:
+         #print(i)
 
     transcript_generated = transcript_list.find_generated_transcript(['en']).fetch()
     for i in transcript_generated:
@@ -114,11 +114,11 @@ def main():
         case "--help":
             usage()
         case "transcript":
-            if sys.argc != 2:
+            if len(sys.argv) != 3:
                 usage()
                 exit(1)
 
-            TEST_URL = "https://www.youtube.com/watch?v=JN3KPFbWCy8"
+            TEST_URL = "https://www.youtube.com/watch?v=53yPfrqbpkE"
             curr_id = parse_url(sys.argv[2])
             transcript = get_transcript(curr_id)
 
