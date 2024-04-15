@@ -14,11 +14,11 @@
 A tool for capturing moments of interest
 ```
 
-## Clippy aims to address the following use cases:
+## Features
 
-#### Capturing moments of interest in audio and video
+#### Capture significant moments in audio and video
 
-#### Analyze audio and video data and provide detailed analysis of content
+#### Analyze audio and video data to deliver in-depth content analysis
 
 ## Usage
 activate virtual environment
