@@ -52,11 +52,7 @@ def parse_url(url):
     return res
 
 ### === Transcript Handles === ###
-
 # TODO overload func with list of video_ids as well as lang of transcript
-# This function needs to follow the following edge cases:
-#           generated and manual transcripts (keep track of stream chat/ chat from other platforms
-#           no transcript available - perror and return to the user
 def get_transcript(video_id):
     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
 
@@ -74,7 +70,6 @@ def get_transcript(video_id):
 
     return transcript_generated
 
-
 ### === Driver === ###
 # Usage message 
 usage_string = """
@@ -82,8 +77,7 @@ usage: clippy [-h | --help] <command> [<args>]
 
 commands:
 get transcript 
-   transcript <video-url> [-s]        Stage changes to cache. 
-      -s : saves the file to the transcripts directory 
+   transcript <video-url>         fetch transcript via a URL to a Youtube Video
 """
 
 def usage(msg=""):
@@ -92,10 +86,8 @@ def usage(msg=""):
     if msg != "":
         print(msg)
 
-# Sets up clippy
+# setup file directory for transcripts
 def setup():
-    # setup file directory for transcripts
-    mkdir(TRANSCRIPTS_DIR)
     mkdir(TRANSCRIPTS_DIR)
     print("clippy: setup complete")
 
@@ -118,7 +110,6 @@ def main():
                 usage()
                 exit(1)
 
-            TEST_URL = "https://www.youtube.com/watch?v=53yPfrqbpkE"
             curr_id = parse_url(sys.argv[2])
             transcript = get_transcript(curr_id)
 

@@ -11,21 +11,14 @@
                     888      888      Y8b d88P 
                     888      888       "Y88P"  
 
-A tool for tokenizing moments of interest in videos
+A tool for capturing moments of interest
 ```
 
-## Clippy aims to address the two following use cases:
+## Clippy aims to address the following use cases:
 
-### Tokenizing moments of interest in videos
+#### Capturing moments of interest in audio and video
 
-### Creating descriptions for timestamps
-- This will involve a reduce algorithm that can squash nodes (containing a "topic" embedding)
-
-# Stretch goals:
-- video analyzing (for clips where speech is not the deciding factor for a clip being of interest)
-- ui 
-- highlight video generator
-- auto upload
+#### Analyze audio and video data and provide detailed analysis of content
 
 ## Usage
 activate virtual environment
@@ -41,10 +34,4 @@ build packages
 run
 ```
 λ python3 clippy.py 
-
-# for distribution build
-λ cd build/dist
-λ ./clippy <args>
 ```
-
-
