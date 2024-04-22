@@ -14,5 +14,6 @@ out.csv
 output_data/
 input_data/
 staged_data/
+cache/
 
 .DS_Store
