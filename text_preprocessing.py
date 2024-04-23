@@ -76,6 +76,50 @@ sentiment_pipe = pipeline(task="text-classification", model="SamLowe/roberta-bas
 def get_sentiment(row):
     return sentiment_pipe(row['text'])[0] # produces a list of dicts for each label
 
+def unpack_sentiment(row):
+    sentiment = row['sentiment']
+    if sentiment:
+        for label_dict in sentiment:
+            label = label_dict['label'] + "_sentiment"
+            score = label_dict['score']
+            row[label] = score
+    return row
+
+def get_positive_sentiment(row):
+    res = 0
+    res += row['admiration_sentiment']
+    res += row['amusement_sentiment']
+    res += row['approval_sentiment']
+    res += row['caring_sentiment']
+    res += row['curiosity_sentiment']
+    res += row['desire_sentiment']
+    res += row['gratitude_sentiment']
+    res += row['joy_sentiment']
+    res += row['love_sentiment']
+    res += row['optimism_sentiment']
+    res += row['pride_sentiment']
+    res += row['relief_sentiment']
+    res += row['surprise_sentiment']
+
+    return res
+
+def get_negative_sentiment(row):
+    res = 0
+    res += row['anger_sentiment']
+    res += row['annoyance_sentiment']
+    res += row['confusion_sentiment']
+    res += row['disappointment_sentiment']
+    res += row['disapproval_sentiment']
+    res += row['disgust_sentiment']
+    res += row['embarrassment_sentiment']
+    res += row['fear_sentiment']
+    res += row['grief_sentiment']
+    res += row['nervousness_sentiment']
+    res += row['realization_sentiment']
+    res += row['remorse_sentiment']
+    res += row['sadness_sentiment']
+    return res
+
 # Entity Recognition
 import spacy
 # TODO design decision: handling empty columns, keep or toss
@@ -127,17 +171,22 @@ def main():
         df['duration'] = df.apply(get_duration,axis=1)
         tqdm.pandas(desc="Measuring Sentiment")
         df['sentiment'] = df.progress_apply(get_sentiment, axis=1)
+        df = df.apply(unpack_sentiment, axis=1)
+        df['positive_sentiment'] = df.apply(get_positive_sentiment, axis=1)
+        df['negative_sentiment'] = df.apply(get_negative_sentiment, axis=1)
         tqdm.pandas(desc="Searching for Entities")
         df['entities'] = df.progress_apply(get_entity_values, axis=1)
         # Drop unncessary data
         df = df.drop(columns='language')
         df = df.drop(columns='segments')
+        df = df.drop(columns='sentiment')
+
     except:
         perror("unable to create dataset")
         exit(1)
 
     # Export
     df.to_csv(OUTPUT_DIR + 'out_text_preprocessing.csv', index=False) 
-                                
+
 if __name__ == "__main__":
     main()
