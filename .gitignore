@@ -5,6 +5,7 @@ build/
 dist/
 clippy.spec
 .venv/
+*.swp
 
 notes.md
 
@@ -14,5 +15,6 @@ out.csv
 output_data/
 input_data/
 staged_data/
+cache/
 
 .DS_Store
