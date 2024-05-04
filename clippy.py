@@ -121,6 +121,8 @@ def main():
                 f.close()
 
             assert os.path.isfile(new_file), perror("could not write" + curr_id + "to file")
+        case _:
+            perror(f"'{cmd}' is not a recognized command")
 
 if __name__ == "__main__":
     main()
