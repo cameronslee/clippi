@@ -5,6 +5,8 @@ from tqdm import tqdm
 import av
 import numpy as np
 
+from helpers import perror, mkdir
+
 ### === Helpers === ###
 import os
 def perror(msg):
@@ -18,7 +20,7 @@ def mkdir(path):
     print("path already exists")
     return
 
-OUTPUT_DIR = 'cache/'  # target output for preoprocessing is cache
+OUTPUT_DIR = './cache/'  # target output for preoprocessing is cache
 
 usage_string = """
 usage: vision_preprocessing <filename>              perform preprocessing
