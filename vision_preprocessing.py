@@ -7,30 +7,6 @@ import numpy as np
 
 from helpers import perror, mkdir
 
-### === Helpers === ###
-import os
-def perror(msg):
-    print("error: " + msg)
-
-def mkdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-        return path
-
-    print("path already exists")
-    return
-
-OUTPUT_DIR = './cache/'  # target output for preoprocessing is cache
-
-usage_string = """
-usage: vision_preprocessing <filename>              perform preprocessing
-"""
-def usage():
-    print(usage_string)
-
-### === Dataframe === ###
-df = pd.DataFrame(columns=['start_frame', 'end_frame', 'start_time', 'end_time'])
-
 ### === Sampling === ###
 def read_video_pyav(container, indices):
     '''
@@ -103,26 +79,26 @@ def get_classification(row):
 
     return video_labels[predicted.item()]
 
-### === Driver === ###
-def main():
-    if (len(sys.argv)) < 2:
-        usage()
-        exit(1)
-    
-    INPUT_FILE = sys.argv[1]
+### === Dataframe === ###
+df = pd.DataFrame(columns=['start_frame', 'end_frame', 'start_time', 'end_time'])
 
-    if not os.path.isfile(INPUT_FILE):
-        perror("unable to process input file " + str(INPUT_FILE))
+### === Driver === ###
+def preprocess_vision(input_file, output_file, output_dir):
+    if not os.path.isfile(input_file):
+        perror("unable to process input file " + str(input_file))
         exit(1)
     
-    print("Processing: " + INPUT_FILE)
+    print("Processing: " + input_file)
     global df
-    videoreader = VideoReader(uri=INPUT_FILE, num_threads=1, ctx=cpu(0))
-    container = av.open(INPUT_FILE)
-    SEGMENT_LENGTH = container.streams.video[0].frames
+    try:
+        videoreader = VideoReader(uri=input_file, num_threads=1, ctx=cpu(0))
+        container = av.open(input_file)
+        SEGMENT_LENGTH = container.streams.video[0].frames
+    except:
+        perror("videoreader and container could not be initialized")
 
     if SEGMENT_LENGTH <= 0:
-        perror("video container could not be initialized")
+        perror("segment length must be greater than 0")
         exit(1)
     
     # frame sample size
@@ -131,33 +107,40 @@ def main():
 
     # Set up frame indicies
     avg_fps = videoreader.get_avg_fps()
-    for i in range(0, (SEGMENT_LENGTH // SAMPLE_SIZE)):
-        start_frame = i * SAMPLE_SIZE
-        end_frame = (i * SAMPLE_SIZE) + SAMPLE_SIZE
-        start_time = round(start_frame / avg_fps, 2)
-        end_time = round(end_frame / avg_fps, 2)
-        df.loc[len(df)] = [start_frame, end_frame, start_time, end_time]
-
-    # Account for any clipping
-    last_value = df['end_frame'].iloc[-1]
-    df.loc[len(df)] = [last_value, SEGMENT_LENGTH-1, round(last_value / avg_fps), round(SEGMENT_LENGTH-1 / avg_fps)]
+    try:
+        for i in range(0, (SEGMENT_LENGTH // SAMPLE_SIZE)):
+            start_frame = i * SAMPLE_SIZE
+            end_frame = (i * SAMPLE_SIZE) + SAMPLE_SIZE
+            start_time = round(start_frame / avg_fps, 2)
+            end_time = round(end_frame / avg_fps, 2)
+            df.loc[len(df)] = [start_frame, end_frame, start_time, end_time]
+        # Account for any clipping
+        last_value = df['end_frame'].iloc[-1]
+        df.loc[len(df)] = [last_value, SEGMENT_LENGTH-1, round(last_value / avg_fps), round(SEGMENT_LENGTH-1 / avg_fps)]
+    except:
+        perror("unable to initialize frame indices")
+        exit(1)
 
     tqdm.pandas(desc="Processing Visual Data")
-    # Get video
     def get_video(row):
         return videoreader.get_batch(sample_frame_indices(clip_len=SAMPLE_SIZE, frame_sample_rate=FRAME_SAMPLE_RATE, seg_len=container.streams.video[0].frames, end_idx=row['end_frame'])).asnumpy()
-    df['video'] = df.progress_apply(get_video, axis=1)
+    try:
+        df['video'] = df.progress_apply(get_video, axis=1)
+    except:
+        perror("unable to process visual data")
+        exit(1)
 
     tqdm.pandas(desc="Running Inference")
-    df['vision_classification'] = df.progress_apply(get_classification, axis=1)
+    try:
+        df['vision_classification'] = df.progress_apply(get_classification, axis=1)
+    except:
+        perror('unable to complete inference')
+        exit(1)
 
-    # Drop video because its huge
+    # drop video because its huge
     df = df.drop(columns=['video'])
 
-    # Export
-    df.to_csv(OUTPUT_DIR + 'out_vision_preprocessing.csv', index=False) 
+    # export
+    df.to_csv(output_dir + output_file, index=False) 
 
     print("vision preprocessing complete")
-    
-if __name__ == "__main__":
-    main()  

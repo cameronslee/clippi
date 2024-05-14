@@ -169,3 +169,5 @@ def preprocess_text(input_file, output_file, output_dir):
 
     # Export
     df.to_csv(output_dir + output_file, index=False) 
+    
+    print("text preprocessing complete")
