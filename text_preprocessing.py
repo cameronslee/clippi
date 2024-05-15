@@ -24,10 +24,10 @@ def get_length(row):
     return len(row['segments']['text'])
 
 def get_start(row):
-    return row['segments']['start_time']
+    return row['segments']['start']
 
 def get_end(row):
-    return row['segments']['end_time']
+    return row['segments']['end']
 
 def get_duration(row):
     return round(abs(row['segments']['end'] - row['segments']['start']), 2)
@@ -136,12 +136,12 @@ def preprocess_text(input_file, output_file, output_dir):
     try:
         tqdm.pandas(desc="processing text data")
         df['text'] = df.progress_apply(get_text,axis=1)
-        df['text_len'] = df.apply(get_length,axis=1)
-        df['start_time'] = df.apply(get_start,axis=1)
-        df['end_time'] = df.apply(get_end,axis=1)
-        df['duration'] = df.apply(get_duration,axis=1)
+        df['text_len'] = df.progress_apply(get_length,axis=1)
+        df['start'] = df.progress_apply(get_start,axis=1)
+        df['end'] = df.progress_apply(get_end,axis=1)
+        df['duration'] = df.progress_apply(get_duration,axis=1)
     except:
-        perror("unable process text data")
+        perror("unable to process text data")
         exit(1)
 
     try:
@@ -166,6 +166,9 @@ def preprocess_text(input_file, output_file, output_dir):
     df = df.drop(columns='language')
     df = df.drop(columns='segments')
     df = df.drop(columns='sentiment')
+
+    # rename for consistency
+    df = df.rename(columns={"start": "start_time", "end": "end_time"})
 
     # Export
     df.to_csv(output_dir + output_file, index=False) 
