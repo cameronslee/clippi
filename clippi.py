@@ -15,8 +15,11 @@ A tool for capturing moments of interest
 """
 import sys
 import os
-from helpers import perror, touch, mkdir
+
+from helpers import perror
 from text_preprocessing import preprocess_text
+from vision_preprocessing import preprocess_vision
+
 PREPROCESSING_OUTPUT_DIR = "./cache/"
 
 # TODO support batching of multiple videos
@@ -49,6 +52,7 @@ def main():
     cmd = sys.argv[1]
     arg1 = sys.argv[2]
 
+    # FIXME add checking for filetype 
     if not os.path.isfile(arg1):
         perror("unable to process input file " + str(arg1))
         exit(1)
@@ -58,11 +62,11 @@ def main():
             perror("unsupported command")
             exit(1)
         case "preprocess":
+            # TODO run entire preprocessing pipeline (includes merging data)
             perror("unsupported command")
             exit(1)
         case "vision_preprocess":
-            perror("unsupported command")
-            exit(1)
+            preprocess_vision(input_file=arg1, output_file='out_vision_preprocessing.csv', output_dir=PREPROCESSING_OUTPUT_DIR)
         case "text_preprocess":
             preprocess_text(input_file=arg1, output_file='out_text_preprocessing.csv', output_dir=PREPROCESSING_OUTPUT_DIR)
         case "audio_preprocess":

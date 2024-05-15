@@ -7,6 +7,8 @@ clippy.spec
 .venv/
 *.swp
 
+__pycache__
+
 notes.md
 
 # data

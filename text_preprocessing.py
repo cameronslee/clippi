@@ -111,12 +111,16 @@ nlp = spacy.load("en_core_web_sm")
 
 ### === Driver === ###
 import os
+
+PREPROCESSING_OUTPUT_DIR = "./cache/"
+
 def preprocess_text(input_file, output_file, output_dir):
     print("text_preprocessing: processing" + input_file)
     # Generate transcript if it does not exist in cache
     if not os.path.isfile(output_file):
         try:
-            transcript = get_transcript(input_file, input_file.split('.')[-1]+"_transcript")
+            transcript_out = os.path.basename(input_file) + "_transcript"
+            transcript = get_transcript(input_file, PREPROCESSING_OUTPUT_DIR + transcript_out) 
         except:
             perror("unable to generate transcript")
     else: 
