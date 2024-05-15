@@ -24,10 +24,10 @@ def get_length(row):
     return len(row['segments']['text'])
 
 def get_start(row):
-    return row['segments']['start']
+    return row['segments']['start_time']
 
 def get_end(row):
-    return row['segments']['end']
+    return row['segments']['end_time']
 
 def get_duration(row):
     return round(abs(row['segments']['end'] - row['segments']['start']), 2)
@@ -106,8 +106,8 @@ def get_entity_values(row):
     return [(ent.text, ent.start_char, ent.end_char, ent.label_) for ent in doc.ents]
 # Run this:
 # $ python3 -m spacy download en
-#nlp = spacy.load("en_core_web_sm")
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
+#nlp = spacy.load("en_core_web_lg")
 
 ### === Driver === ###
 import os
@@ -137,8 +137,8 @@ def preprocess_text(input_file, output_file, output_dir):
         tqdm.pandas(desc="processing text data")
         df['text'] = df.progress_apply(get_text,axis=1)
         df['text_len'] = df.apply(get_length,axis=1)
-        df['start'] = df.apply(get_start,axis=1)
-        df['end'] = df.apply(get_end,axis=1)
+        df['start_time'] = df.apply(get_start,axis=1)
+        df['end_time'] = df.apply(get_end,axis=1)
         df['duration'] = df.apply(get_duration,axis=1)
     except:
         perror("unable process text data")
