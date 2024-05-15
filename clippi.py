@@ -19,8 +19,12 @@ import os
 from helpers import perror
 from text_preprocessing import preprocess_text
 from vision_preprocessing import preprocess_vision
+from preprocessing import preprocess_all
 
 PREPROCESSING_OUTPUT_DIR = "./cache/"
+# preprocessing file handles
+VISION_OUTPUT_FILE = 'out_vision_preprocessing.csv'
+TEXT_OUTPUT_FILE = 'out_text_preprocessing.csv'
 
 # TODO support batching of multiple videos
 usage_string = """
@@ -63,8 +67,7 @@ def main():
             exit(1)
         case "preprocess":
             # TODO run entire preprocessing pipeline (includes merging data)
-            perror("unsupported command")
-            exit(1)
+            preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
         case "vision_preprocess":
             preprocess_vision(input_file=arg1, output_file='out_vision_preprocessing.csv', output_dir=PREPROCESSING_OUTPUT_DIR)
         case "text_preprocess":
