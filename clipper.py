@@ -1,5 +1,12 @@
 import pandas as pd
 from helpers import perror
+from moviepy.editor import VideoFileClip
+# mac booshit
+# https://github.com/Zulko/moviepy/issues/1158
+import platform
+import os
+if platform.system() == 'Darwin':
+    os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/bin/ffmpeg"
 
 # the heart and soul of the clipping algorithm: a vectorized version of maximum subarray sum
 def mss(a):
@@ -23,7 +30,7 @@ def mss(a):
 
     return start_o, end
 
-def make_clips(input_file, output_file, output_dir):
+def make_clips(video_file, input_file, output_file, output_dir):
     try:
         df = pd.read_csv(input_file)
     except:
@@ -38,6 +45,14 @@ def make_clips(input_file, output_file, output_dir):
         perror("could not generate clip") 
         exit(1)
 
+    v = VideoFileClip(video_file)
+    # lil post processing 
+    fade_duration = 3  # Duration of the fade-out effect in seconds
+    v = v.fadein(fade_duration) 
+    v = v.audio_fadein(fade_duration)
+    v = v.audio_fadeout(fade_duration)
+    v = v.fadeout(fade_duration)
 
-    return df['start_time'][clip[0]], df['end_time'][clip[1]]
+    best_clip = v.subclip(df['start_time'][clip[0]], df['end_time'][clip[1]])
+    best_clip.write_videofile(output_dir+output_file,  codec="libx264", audio_codec="aac")
 
