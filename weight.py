@@ -14,17 +14,13 @@ def weight_clips(input_file, output_file, output_dir):
     except:
         perror("could not read " + input_file)
         exit(1)
-    print(df.info())
 
     # sentiment score
     def get_sentiment_score(row):
         return max(row['positive_sentiment'], max(row['negative_sentiment'], row['neutral_sentiment']))
 
     df['sentiment_score'] = df.apply(get_sentiment_score, axis=1)
-    
-    # replace NANs with neutral score
-    # TODO need to fill in start and end frame for data that came from text preprocessing
-    df['vision_classification'] = df['vision_classification'].fillna(df['vision_classification'].shift(-1))
+     
     # vision score
     vision_label_scores = { "Highlight Worthy": 1, "Neutral": 0, "Not Highlight Worthy": -1 }
     def get_vision_scores(row):
@@ -32,7 +28,11 @@ def weight_clips(input_file, output_file, output_dir):
 
     df['vision_score'] = df.apply(get_vision_scores, axis=1)
 
-    print(df.info())
+    # clip weight
+    # TODO add neighbors
+    def get_weight(row):
+        return row['vision_score'] + row['sentiment_score']
+    df['weight'] = df.apply(get_weight, axis=1) 
 
     # export with scores
     df.to_csv(output_dir + output_file, index=False) 
