@@ -1,4 +1,3 @@
-# Max subarray problem LOL
 import pandas as pd
 from helpers import perror
 
@@ -35,6 +34,6 @@ def weight_clips(input_file, output_file, output_dir):
     df['weight'] = df.apply(get_weight, axis=1) 
 
     # export with scores
-    df.to_csv(output_dir + output_file, index=False) 
+    df.to_csv(output_dir + output_file, index=True) 
 
 

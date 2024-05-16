@@ -21,6 +21,7 @@ from text_preprocessing import preprocess_text
 from vision_preprocessing import preprocess_vision
 from preprocessing import preprocess_all
 from weight import weight_clips
+from clipper import make_clips
 
 PREPROCESSING_OUTPUT_DIR = "./cache/"
 # preprocessing file handles
@@ -30,6 +31,8 @@ TEXT_OUTPUT_FILE = 'out_text_preprocessing.csv'
 PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
 # weighted dataset
 WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
+# clipped file
+CLIPPED_OUTPUT_FILE = 'out_clipped.mp4'
 
 # TODO support batching of multiple videos
 usage_string = """
@@ -48,6 +51,7 @@ commands:
 def usage():
     print(usage_string)
 
+# TODO
 # set up dirs needed to perform preprocessing
 # handle cache and prefetched files
 def setup():
@@ -70,6 +74,7 @@ def main():
         case "run":
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
+            make_clips(input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_file=CLIPPED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
         case "preprocess":
             # TODO run entire preprocessing pipeline (includes merging data)
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
