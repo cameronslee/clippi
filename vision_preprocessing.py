@@ -1,11 +1,10 @@
 import os
-import sys
 import pandas as pd
 from tqdm import tqdm
 import av
 import numpy as np
 
-from helpers import perror, mkdir
+from helpers import perror
 
 ### === Sampling === ###
 def read_video_pyav(container, indices):
@@ -80,7 +79,7 @@ def get_classification(row):
     return video_labels[predicted.item()]
 
 ### === Dataframe === ###
-df = pd.DataFrame(columns=['start_frame', 'end_frame', 'start_time', 'end_time'])
+df = pd.DataFrame(columns=['start_time', 'end_time', 'start_frame', 'end_frame'])
 
 ### === Driver === ###
 def preprocess_vision(input_file, output_file, output_dir):
@@ -113,7 +112,7 @@ def preprocess_vision(input_file, output_file, output_dir):
             end_frame = (i * SAMPLE_SIZE) + SAMPLE_SIZE
             start_time = round(start_frame / avg_fps, 2)
             end_time = round(end_frame / avg_fps, 2)
-            df.loc[len(df)] = [start_frame, end_frame, start_time, end_time]
+            df.loc[len(df)] = [start_time, end_time, start_frame, end_frame]
         # Account for any clipping
         last_value = df['end_frame'].iloc[-1]
         df.loc[len(df)] = [last_value, SEGMENT_LENGTH-1, round(last_value / avg_fps), round(SEGMENT_LENGTH-1 / avg_fps)]
@@ -125,6 +124,7 @@ def preprocess_vision(input_file, output_file, output_dir):
     def get_video(row):
         return videoreader.get_batch(sample_frame_indices(clip_len=SAMPLE_SIZE, frame_sample_rate=FRAME_SAMPLE_RATE, seg_len=container.streams.video[0].frames, end_idx=row['end_frame'])).asnumpy()
     try:
+        df['avg_fps'] = avg_fps
         df['video'] = df.progress_apply(get_video, axis=1)
     except:
         perror("unable to process visual data")
@@ -137,10 +137,7 @@ def preprocess_vision(input_file, output_file, output_dir):
         perror('unable to complete inference')
         exit(1)
 
-    # drop video because its huge
-    df = df.drop(columns=['video'])
-
     # export
-    df.to_csv(output_dir + output_file, index=False) 
+    df.to_csv(output_dir + output_file, columns=["start_time", "end_time", "start_frame", "end_frame", "vision_classification", "avg_fps"], index=False) 
 
     print("vision preprocessing complete")
