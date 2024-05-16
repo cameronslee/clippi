@@ -3,6 +3,7 @@ from vision_preprocessing import preprocess_vision
 import pandas as pd
 from helpers import perror
 import os
+import numpy as np
 
 def preprocess_all(input_file, text_output_file, vision_output_file, output_dir):
     if not os.path.isfile(output_dir+text_output_file):
@@ -21,7 +22,16 @@ def preprocess_all(input_file, text_output_file, vision_output_file, output_dir)
         perror("unable to load preprocessed CSV")
         exit(1)
 
-    df = pd.merge(df_text,df_vision, on=['start_time', 'end_time'], how='outer')
+    df = pd.concat([df_text, df_vision])
 
-    df.to_csv(output_dir + "out_preprocessing.csv", index=False) 
+    df.set_index('start_time', inplace=True)
+    df.sort_index(inplace=True)
+
+    # FIXME HUGE SCARY PANDAS SAYS this is DEPRECATEd THIS but i cant find a better solution right now my brain is scrambled
+    df.fillna(method='bfill', inplace=True)
+
+    # drop avg_fps
+    df = df.drop(columns=['avg_fps'])
+
+    df.to_csv(output_dir + "out_preprocessing.csv", index=True) 
     print("preprocessing complete")

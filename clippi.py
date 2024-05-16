@@ -20,11 +20,16 @@ from helpers import perror
 from text_preprocessing import preprocess_text
 from vision_preprocessing import preprocess_vision
 from preprocessing import preprocess_all
+from weight import weight_clips
 
 PREPROCESSING_OUTPUT_DIR = "./cache/"
 # preprocessing file handles
 VISION_OUTPUT_FILE = 'out_vision_preprocessing.csv'
 TEXT_OUTPUT_FILE = 'out_text_preprocessing.csv'
+# working dataset
+PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
+# weighted dataset
+WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
 
 # TODO support batching of multiple videos
 usage_string = """
@@ -63,8 +68,8 @@ def main():
 
     match cmd:
         case "run":
-            perror("unsupported command")
-            exit(1)
+            preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
+            weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
         case "preprocess":
             # TODO run entire preprocessing pipeline (includes merging data)
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
