@@ -155,7 +155,7 @@ def preprocess_text(input_file, output_file, output_dir):
         df['positive_sentiment'] = df.apply(get_positive_sentiment, axis=1)
         df['negative_sentiment'] = df.apply(get_negative_sentiment, axis=1)
     except:
-        perror("unable measure sentiment")
+        perror("unable to measure sentiment")
         exit(1)
 
     try:
@@ -166,15 +166,10 @@ def preprocess_text(input_file, output_file, output_dir):
         perror("unable to find entities")
         exit(1) 
 
-    # Drop unncessary data
-    df = df.drop(columns='language')
-    df = df.drop(columns='segments')
-    df = df.drop(columns='sentiment')
-
     # rename for consistency
     df = df.rename(columns={"start": "start_time", "end": "end_time"})
 
     # Export
-    df.to_csv(output_dir + output_file, index=False) 
+    df.to_csv(output_dir + output_file, columns=['start_time', 'end_time', 'text', 'negative_sentiment', 'neutral_sentiment', 'positive_sentiment'], index=False) 
     
     print("text preprocessing complete")
