@@ -17,3 +17,8 @@ def mkdir(path):
 
     print("path already exists")
     return
+
+def clear_cache(cache_dir, files = []):
+    for f in files:
+        if os.path.exists(cache_dir + f):
+            os.remove(cache_dir + f)
