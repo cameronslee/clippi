@@ -82,6 +82,7 @@ def get_classification(row):
 df = pd.DataFrame(columns=['start_time', 'end_time', 'start_frame', 'end_frame'])
 
 ### === Driver === ###
+# TODO refactor out constants to be configurable at driver level
 def preprocess_vision(input_file, output_file, output_dir):
     if not os.path.isfile(input_file):
         perror("unable to process input file " + str(input_file))

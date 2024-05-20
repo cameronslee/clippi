@@ -3,7 +3,6 @@ from vision_preprocessing import preprocess_vision
 import pandas as pd
 from helpers import perror
 import os
-import numpy as np
 
 def preprocess_all(input_file, text_output_file, vision_output_file, output_dir):
     if not os.path.isfile(output_dir+text_output_file):

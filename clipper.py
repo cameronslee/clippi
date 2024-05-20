@@ -1,6 +1,7 @@
 import pandas as pd
 from helpers import perror
 from moviepy.editor import VideoFileClip
+
 # mac booshit
 # https://github.com/Zulko/moviepy/issues/1158
 import platform
@@ -9,6 +10,7 @@ if platform.system() == 'Darwin':
     os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/bin/ffmpeg"
 
 # the heart and soul of the clipping algorithm: a vectorized version of maximum subarray sum
+# TODO make this vectorized and genrate multiple indices
 def mss(a):
     start = 0
     end = 0
