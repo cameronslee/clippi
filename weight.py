@@ -1,3 +1,4 @@
+# weight.py
 import pandas as pd
 from helpers import perror
 
@@ -38,13 +39,13 @@ def weight_clips(input_file, output_file, output_dir):
 
     df['vision_score'] = df.apply(get_vision_scores, axis=1)
 
-    # vision desire: LSTM-like metric for "given the similarity in surrounding frames, how likely are we to take this section?"
+    # vision desire: LSTM-like metric for "given similarity in surrounding frames, how likely are we to take this section?"
     # https://stackoverflow.com/questions/46504138/cumulative-count-reset-on-condition/46504302#46504302
     diff = df['vision_score'].diff().fillna(0).ne(0).cumsum()
     counts = df.groupby(diff)['vision_score'].transform('count')
     df['vision_desire'] = counts / 1000
 
-    # sentiment_desire
+    # sentiment_desire 
     diff = df['sentiment_score'].diff().fillna(0).ne(0).cumsum()
     counts = df.groupby(diff)['sentiment_score'].transform('count')
     df['sentiment_desire'] = counts / 1000
@@ -56,3 +57,5 @@ def weight_clips(input_file, output_file, output_dir):
 
     # export with scores
     df.to_csv(output_dir + output_file, index=True) 
+    
+    return df
