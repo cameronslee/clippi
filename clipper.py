@@ -14,8 +14,6 @@ def mss(df):
     res = []
     curr_max = float('-inf')
     global_max = 0
-    #curr_start_time = df['start_time'][0]
-    #curr_end_time = df['end_time'][0]
     curr_start_time = 0
     curr_end_time = 0
 
@@ -33,7 +31,7 @@ def mss(df):
 
     return sorted(res, key=lambda element: (element[2], element[3]), reverse=True)
 
-def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0):
+def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, debug_flag1=False):
     try:
         df = pd.read_csv(input_file)
     except:
@@ -44,6 +42,8 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
         if lower_bound != 0.0 and upper_bound != 0.0:
             clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
         print("clips: ", clips)
+        if debug_flag1:
+            return clips 
     except:
         perror("could not calculate clip weights") 
         exit(1)
@@ -55,3 +55,5 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
     except:
         perror("could not generate clips")
         exit(1)
+
+    return clips
