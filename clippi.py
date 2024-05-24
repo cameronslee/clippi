@@ -32,7 +32,7 @@ PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
 # weighted dataset
 WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
 # clipped file
-CLIPPED_OUTPUT_FILE = 'out_clipped.mp4'
+CLIPPED_OUTPUT_DIR = './cache/clips/'
 
 # TODO support batching of multiple videos
 usage_string = """
@@ -77,7 +77,7 @@ def main():
         case "run":
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
-            make_clips(video_file=arg1, input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_file=CLIPPED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
+            make_clips(video_file=arg1, input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_dir=CLIPPED_OUTPUT_DIR, lower_bound=15.0, upper_bound=60.0)
         case "preprocess":
             # TODO run entire preprocessing pipeline (includes merging data)
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
@@ -92,7 +92,7 @@ def main():
             perror("unsupported command")
             exit(1)
         case "clear_cache":
-            clear_cache(PREPROCESSING_OUTPUT_DIR, [TEXT_OUTPUT_FILE, VISION_OUTPUT_FILE, PREPROCESSING_OUTPUT_FILE, WEIGHTED_OUTPUT_FILE, CLIPPED_OUTPUT_FILE])
+            clear_cache(PREPROCESSING_OUTPUT_DIR, [TEXT_OUTPUT_FILE, VISION_OUTPUT_FILE, PREPROCESSING_OUTPUT_FILE, WEIGHTED_OUTPUT_FILE, CLIPPED_OUTPUT_DIR])
             print("cache cleared")
         case _:
             print(cmd)

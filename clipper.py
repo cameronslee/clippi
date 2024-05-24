@@ -10,51 +10,50 @@ if platform.system() == 'Darwin':
     os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/bin/ffmpeg"
 
 # the heart and soul of the clipping algorithm: a vectorized version of maximum subarray sum
-# TODO make this vectorized and genrate multiple indices
-def mss(a):
-    start = 0
-    end = 0
-    curr_max = 0
-    prev_max = 0
-    start_o = 0
+def mss(df):
+    res = []
+    curr_max = float('-inf')
+    global_max = 0
+    curr_start_time = 0
+    curr_end_time = 0
 
-    prev_max = a[0]
-    
-    for i in range(0, len(a)):
-        curr_max += a[i]
-        if curr_max < 0:
-            start = i+1
-            curr_max = 0
-        elif curr_max > prev_max:
-            end = i 
-            start_o = start
-            prev_max = curr_max
+    for index, row in df.iterrows():
+        global_max += row['weight']
 
-    return start_o, end
+        if global_max > curr_max:
+            curr_max = global_max
+            curr_end_time = row['end_time']
+            res.append((curr_start_time, curr_end_time, (curr_end_time - curr_start_time), global_max))
 
-def make_clips(video_file, input_file, output_file, output_dir):
+        if global_max < 0:
+            global_max = 0
+            curr_start_time = row['start_time']
+
+    return sorted(res, key=lambda element: (element[2], element[3]), reverse=True)
+
+def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, debug_flag1=False):
     try:
         df = pd.read_csv(input_file)
     except:
         perror("could not read " + input_file)
         exit(1)
-
     try:
-        weights = df['weight'].tolist()
-        clip = mss(weights)
-        print(df['start_time'][clip[0]], df['end_time'][clip[1]])
+        clips = mss(df)
+        if lower_bound != 0.0 and upper_bound != 0.0:
+            clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
+        print("clips: ", clips)
+        if debug_flag1:
+            return clips 
     except:
-        perror("could not generate clip") 
+        perror("could not calculate clip weights") 
+        exit(1)
+    try:
+        v = VideoFileClip(video_file)
+        for i in range(len(clips)):
+            curr = v.subclip(clips[i][0], clips[i][1])
+            curr.write_videofile(output_dir+str(i)+"_"+str(clips[i][3])+".mp4", codec="libx264", audio_codec="aac")
+    except:
+        perror("could not generate clips")
         exit(1)
 
-    v = VideoFileClip(video_file)
-    # lil post processing 
-    fade_duration = 3  # Duration of the fade-out effect in seconds
-    v = v.fadein(fade_duration) 
-    v = v.audio_fadein(fade_duration)
-    v = v.audio_fadeout(fade_duration)
-    v = v.fadeout(fade_duration)
-
-    best_clip = v.subclip(df['start_time'][clip[0]], df['end_time'][clip[1]])
-    best_clip.write_videofile(output_dir+output_file,  codec="libx264", audio_codec="aac")
-
+    return clips
