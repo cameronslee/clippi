@@ -33,7 +33,7 @@ def mss(df):
 
     return sorted(res, key=lambda element: (element[2], element[3]), reverse=True)
 
-def make_clips(video_file, input_file, output_dir, cap=0.0):
+def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0):
     try:
         df = pd.read_csv(input_file)
     except:
@@ -41,13 +41,12 @@ def make_clips(video_file, input_file, output_dir, cap=0.0):
         exit(1)
     try:
         clips = mss(df)
-        if cap != 0.0:
-            clips = [i for i in clips if i[2] <= cap]
-        print(clips)
+        if lower_bound != 0.0 and upper_bound != 0.0:
+            clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
+        print("clips: ", clips)
     except:
         perror("could not calculate clip weights") 
         exit(1)
-
     try:
         v = VideoFileClip(video_file)
         for i in range(len(clips)):
