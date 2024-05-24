@@ -22,19 +22,8 @@ from vision_preprocessing import preprocess_vision
 from preprocessing import preprocess_all
 from weight import weight_clips
 from clipper import make_clips
+from conf import setup, HOME_DIR, CACHE_DIR, PREPROCESSING_OUTPUT_DIR, CLIPPED_OUTPUT_DIR, VISION_OUTPUT_FILE, TEXT_OUTPUT_FILE, PREPROCESSING_OUTPUT_FILE, WEIGHTED_OUTPUT_FILE
 
-PREPROCESSING_OUTPUT_DIR = "./cache/"
-# preprocessing file handles
-VISION_OUTPUT_FILE = 'out_vision_preprocessing.csv'
-TEXT_OUTPUT_FILE = 'out_text_preprocessing.csv'
-# working dataset
-PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
-# weighted dataset
-WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
-# clipped file
-CLIPPED_OUTPUT_DIR = './cache/clips/'
-
-# TODO support batching of multiple videos
 usage_string = """
 usage: clippi [-h | --help] <command> [<args>] 
 
@@ -53,12 +42,6 @@ commands:
 def usage():
     print(usage_string)
 
-# TODO
-# set up dirs needed to perform preprocessing
-# handle cache and prefetched files
-def setup():
-    pass
-
 def main():
     if len(sys.argv) < 2:
         usage()
@@ -75,6 +58,8 @@ def main():
 
     match cmd:
         case "run":
+            # setup cache dir
+            setup()
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             make_clips(video_file=arg1, input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_dir=CLIPPED_OUTPUT_DIR, lower_bound=15.0, upper_bound=60.0)

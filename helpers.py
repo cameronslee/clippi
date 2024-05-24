@@ -1,5 +1,3 @@
-# Custom helper functions 
-
 import os
 
 def perror(msg):
@@ -10,15 +8,16 @@ def touch(path):
         os.utime(path, None) # set access and modified times
         f.close()
 
-def mkdir(path):
+def mkdir(path, echo=False):
     if not os.path.exists(path):
         os.makedirs(path)
         return path
+    if echo:
+        print("path already exists")
 
-    print("path already exists")
-    return
-
-def clear_cache(cache_dir, files = []):
-    for f in files:
-        if os.path.exists(cache_dir + f):
-            os.remove(cache_dir + f)
+def clear_cache(cache_dir, paths=[]):
+    for p in paths:
+        if os.path.isdir(p):
+            os.rmdir(p)
+        elif os.path.exists(cache_dir + p):
+            os.remove(cache_dir + p)
