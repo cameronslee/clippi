@@ -31,7 +31,7 @@ def mss(df):
 
     return sorted(res, key=lambda element: (element[2], element[3]), reverse=True)
 
-def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, debug_flag1=False):
+def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, num_clips=0, debug_flag1=False):
     try:
         df = pd.read_csv(input_file)
     except:
@@ -39,7 +39,10 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
         exit(1)
     try:
         clips = mss(df)
-        if lower_bound != 0.0 and upper_bound != 0.0:
+        if num_clips > 0:
+            if num_clips < len(clips):
+                clips = clips[:num_clips:] # we return the 'top num_clips' clips
+        if lower_bound != 0 and upper_bound != 0:
             clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
         print("clips: ", clips)
         if debug_flag1:
