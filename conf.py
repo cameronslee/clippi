@@ -1,6 +1,6 @@
 import os
 
-from helpers import perror, touch, mkdir, clear_cache
+from helpers import perror, mkdir, clear_cache
 
 HOME_DIR = os.path.expanduser(path='~')
 CACHE_DIR = HOME_DIR + "/.clippicache/"
@@ -19,8 +19,9 @@ WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
 
 def setup(reset=True):
     try:
-        if reset:
-            clear_cache(cache_dir=CACHE_DIR, paths=[PREPROCESSING_OUTPUT_DIR, CLIPPED_OUTPUT_DIR, TEST_DIR])
+        pass
+        print(CACHE_DIR)
+        clear_cache(cache_dir=CACHE_DIR)
         mkdir(CACHE_DIR)
         mkdir(PREPROCESSING_OUTPUT_DIR)
         mkdir(CLIPPED_OUTPUT_DIR)

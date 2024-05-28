@@ -1,4 +1,5 @@
 import os
+import shutil
 
 def perror(msg):
     print("error: " + msg)
@@ -15,9 +16,6 @@ def mkdir(path, echo=False):
     if echo:
         print("path already exists")
 
-def clear_cache(cache_dir, paths=[]):
-    for p in paths:
-        if os.path.isdir(p):
-            os.rmdir(p)
-        elif os.path.exists(cache_dir + p):
-            os.remove(cache_dir + p)
+def clear_cache(cache_dir):
+    if os.path.exists(cache_dir):
+        shutil.rmtree(cache_dir, ignore_errors=True)
