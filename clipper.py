@@ -39,11 +39,11 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
         exit(1)
     try:
         clips = mss(df)
-        if num_clips > 0:
-            if num_clips < len(clips):
-                clips = clips[:num_clips:] # we return the 'top num_clips' clips
         if lower_bound != 0 and upper_bound != 0:
             clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
+        if num_clips > 0:
+            if num_clips < len(clips):
+                clips = clips[:num_clips] # we return the 'top num_clips' clips
         print("clips: ", clips)
         if debug_flag1:
             return clips 

@@ -18,14 +18,15 @@ PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
 WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
 
 def setup(reset=True):
-    try:
-        pass
-        print(CACHE_DIR)
-        clear_cache(cache_dir=CACHE_DIR)
-        mkdir(CACHE_DIR)
-        mkdir(PREPROCESSING_OUTPUT_DIR)
-        mkdir(CLIPPED_OUTPUT_DIR)
-        mkdir(TEST_DIR)
-    except:
-        perror("unable to setup output dirs")
-        exit(1)
+    if reset:
+        try:
+            pass
+            print(CACHE_DIR)
+            clear_cache(cache_dir=CACHE_DIR)
+            mkdir(CACHE_DIR)
+            mkdir(PREPROCESSING_OUTPUT_DIR)
+            mkdir(CLIPPED_OUTPUT_DIR)
+            mkdir(TEST_DIR)
+        except:
+            perror("unable to setup output dirs")
+            exit(1)
