@@ -61,7 +61,6 @@ def main():
     if len(sys.argv) == 6:
         arg4 = float(sys.argv[5])
 
-
     match cmd:
         case "run":
             # setup cache dir
