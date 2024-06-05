@@ -29,9 +29,10 @@ def mss(df):
             global_max = 0
             curr_start_time = row['start_time']
 
+    # return list sorted by duration and then global max weight
     return sorted(res, key=lambda element: (element[2], element[3]), reverse=True)
 
-def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, num_clips=0, debug_flag1=False):
+def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=0.0, num_clips=0, video_generation=False):
     try:
         df = pd.read_csv(input_file)
     except:
@@ -44,19 +45,21 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
         if num_clips > 0:
             if num_clips < len(clips):
                 clips = clips[:num_clips] # we return the 'top num_clips' clips
-        print("clips: ", clips)
-        if debug_flag1:
-            return clips 
     except:
         perror("could not calculate clip weights") 
         exit(1)
-    try:
-        v = VideoFileClip(video_file)
-        for i in range(len(clips)):
-            curr = v.subclip(clips[i][0], clips[i][1])
-            curr.write_videofile(output_dir+str(i)+"_"+str(clips[i][3])+".mp4", codec="libx264", audio_codec="aac")
-    except:
-        perror("could not generate clips")
-        exit(1)
+
+    clips_df = pd.DataFrame(clips, columns=['start_time', 'end_time', 'duration', 'weight']) 
+    clips_df.to_csv(output_dir+"indices.csv")
+
+    if video_generation:
+        try:
+            v = VideoFileClip(video_file)
+            for i in range(len(clips)):
+                curr = v.subclip(clips[i][0], clips[i][1])
+                curr.write_videofile(output_dir+str(i)+"_"+str(clips[i][3])+".mp4", codec="libx264", audio_codec="aac")
+        except:
+            perror("could not generate clips")
+            exit(1)
 
     return clips
