@@ -19,7 +19,7 @@ Clippi is a video editing and production tool that aims to capture moments of in
 
 ## Features
 ### Capture moments of interest
-Clippi leverages ML pipelines and media processing algorithms to perform in-depth analysis on text, audio, and visual data. Clippi uses this metadata to produce a "weight embedding" that allows it to make a decision as to whether or not the moment in the video is worth exploring. The clips of interest are delivered as timestamp indices for ease of use.
+Clippi leverages ML pipelines and media processing algorithms to analyze text, audio, and visual data. The metadata is used to produce a "weight embedding" that allows it to make a decision on if the video is worth exploring. The clips of interest are delivered as timestamp indices for ease of use.
 
 ### Analyze metadata to deliver in-depth content analysis
 With clips that are of interest, Clippi can generate natural language varying in depth depending on the use case. (descriptions, captions, chapters, summaries etc.)
