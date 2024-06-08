@@ -31,11 +31,6 @@ commands:
     run <filename> [num_clips] [lower_bound] [upper_bound]     run clippi from start to finish 
                                                                options to provide bounds on clip size and 
                                                                number of clips to generate
-    preprocess <filename>                                      run clippi's entire preprocessing pipeline
-    weight <filename>                                          run clippi's weighting algorithm 
-    vision_preprocess <filename>                               run clippi's vision preprocessing pipeline
-    text_preprocess <filename>                                 run clippi's text preprocessing pipeline
-    audio_preprocess <filename>                                run clippi's audio preprocessing pipeline
     clear_cache                                                clear clippi's cache 
 """
 
@@ -51,6 +46,9 @@ def main():
     arg1, arg2, arg3, arg4 = "",0,0,0
     if len(sys.argv) >= 3:
         arg1 = sys.argv[2]
+        if not arg1.endswith(".mp4"):
+            perror("unsupported file format")
+            exit(1)
         if not os.path.isfile(arg1):
             perror("unable to process input file " + str(arg1))
             exit(1)

@@ -96,6 +96,7 @@ def preprocess_vision(input_file, output_file, output_dir):
         SEGMENT_LENGTH = container.streams.video[0].frames
     except:
         perror("videoreader and container could not be initialized")
+        exit(1)
 
     if SEGMENT_LENGTH <= 0:
         perror("segment length must be greater than 0")
