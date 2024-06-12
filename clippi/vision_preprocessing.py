@@ -1,144 +1,102 @@
 import os
 import pandas as pd
 from tqdm import tqdm
-import av
-import numpy as np
+import cv2 as cv 
+import threading
+import queue
+import math
 
 from helpers import perror
 
-### === Sampling === ###
-def read_video_pyav(container, indices):
-    '''
-    Decode the video with PyAV decoder.
-    Args:
-        container (`av.container.input.InputContainer`): PyAV container.
-        indices (`List[int]`): List of frame indices to decode.
-    Returns:
-        result (np.ndarray): np array of decoded frames of shape (num_frames, height, width, 3).
-    '''
-    frames = []
-    container.seek(0)
-    start_index = indices[0]
-    end_index = indices[-1]
-    for i, frame in enumerate(container.decode(video=0)):
-        if i > end_index:
-            break
-        if i >= start_index and i in indices:
-            frames.append(frame)
+from conf import PREPROCESSING_OUTPUT_DIR, VISION_OUTPUT_FILE
 
-    return np.stack([x.to_ndarray(format="rgb24") for x in frames])
+class Worker(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.queue = queue.Queue(maxsize=20)
 
-def sample_frame_indices(clip_len, frame_sample_rate, seg_len, end_idx):
-    '''
-    Sample a given number of frame indices from the video.
-    Args:
-        clip_len (`int`): Total number of frames to sample.
-        frame_sample_rate (`int`): Sample every n-th frame.
-        seg_len (`int`): Maximum allowed index of sample's last frame. 
-        end_idx (`int`): Last index considered
+    def decode(self, video_path, frame_indicies, callback):
+        self.queue.put((video_path, frame_indicies, callback))
 
-    Returns:
-        indices (`List[int]`): List of sampled frame indices
-    '''
-    converted_len = int(clip_len * frame_sample_rate)
-    start_idx = end_idx - converted_len
-    indices = np.linspace(start_idx, end_idx, num=clip_len)
-    indices = np.clip(indices, start_idx, end_idx - 1).astype(np.int64)
+    def run(self):
+        """execute frame reading"""
+        video_path, frame_indicies, on_decode_callback = self.queue.get()
+        cap = cv.VideoCapture(video_path)
 
-    return indices
+        cap.set(cv.CAP_PROP_POS_FRAMES, frame_indicies[0])
+        success = cap.grab()
 
-### === VideoReader === ###
-# decord notes:
-# https://github.com/dmlc/decord?tab=readme-ov-file            aarch64: build from source to avoid shambles
-# $ cd decord/python && pip install .                          
-from decord import VideoReader, cpu
-
-### === Model === ###
-from transformers import AutoProcessor, AutoModel
-processor = AutoProcessor.from_pretrained("microsoft/xclip-base-patch32")
-model = AutoModel.from_pretrained("microsoft/xclip-base-patch32")
-video_labels = [
-    "Highlight Worthy",
-    "Neutral",
-    "Not Highlight Worthy",
-]
-
-### === Inference === ###
-import torch
-# TODO perf bottleneck right here, batch this with torch dataset loader or something
-def get_classification(row):
-    video = np.array(row['video']) # perf improvement 
-    inputs = processor(text=video_labels, videos=list(video), return_tensors="pt", padding=True)
-    # forward pass
-    with torch.no_grad():
-        outputs = model(**inputs)
-    
-    probs = outputs.logits_per_video.softmax(dim=1)
-    _, predicted = torch.max(probs, dim=1)
-
-    return video_labels[predicted.item()]
+        results = []
+        idx, count = 0, frame_indicies[0]
+        while success:
+            if count == frame_indicies[idx]:
+                success, image = cap.retrieve()
+                if success:
+                    on_decode_callback(image)
+                else:
+                    break
+                idx += 1
+                if idx >= len(frame_indicies):
+                    break
+            count += 1
+            success = cap.grab()
+# ideas
+# detect changes in frame intensity and brightness
+# detect changes in HSV color space
+def detect():
+    pass
 
 ### === Dataframe === ###
-df = pd.DataFrame(columns=['start_time', 'end_time', 'start_frame', 'end_frame'])
+#df = pd.DataFrame(columns=['start_time', 'end_time', 'start_frame', 'end_frame'])
 
 ### === Driver === ###
-# TODO refactor out constants to be configurable at driver level
 def preprocess_vision(input_file, output_file, output_dir):
     if not os.path.isfile(input_file):
         perror("unable to process input file " + str(input_file))
         exit(1)
-    
+
     print("Processing: " + input_file)
     global df
-    try:
-        videoreader = VideoReader(uri=input_file, num_threads=1, ctx=cpu(0))
-        container = av.open(input_file)
-        SEGMENT_LENGTH = container.streams.video[0].frames
-    except:
-        perror("videoreader and container could not be initialized")
-
-    if SEGMENT_LENGTH <= 0:
-        perror("segment length must be greater than 0")
-        exit(1)
-    
-    # frame sample size
-    SAMPLE_SIZE = 8
-    FRAME_SAMPLE_RATE = 1
-
-    # Set up frame indicies
-    avg_fps = videoreader.get_avg_fps()
-    try:
-        for i in range(0, (SEGMENT_LENGTH // SAMPLE_SIZE)):
-            start_frame = i * SAMPLE_SIZE
-            end_frame = (i * SAMPLE_SIZE) + SAMPLE_SIZE
-            start_time = round(start_frame / avg_fps, 2)
-            end_time = round(end_frame / avg_fps, 2)
-            df.loc[len(df)] = [start_time, end_time, start_frame, end_frame]
-        # Account for any clipping
-        last_value = df['end_frame'].iloc[-1]
-        df.loc[len(df)] = [last_value, SEGMENT_LENGTH-1, round(last_value / avg_fps), round(SEGMENT_LENGTH-1 / avg_fps)]
-    except:
-        perror("unable to initialize frame indices")
-        exit(1)
+    cap = cv.VideoCapture(input_file)
 
     tqdm.pandas(desc="Processing Visual Data")
-    def get_video(row):
-        return videoreader.get_batch(sample_frame_indices(clip_len=SAMPLE_SIZE, frame_sample_rate=FRAME_SAMPLE_RATE, seg_len=container.streams.video[0].frames, end_idx=row['end_frame'])).asnumpy()
-    try:
-        df['avg_fps'] = avg_fps
-        df['video'] = df.progress_apply(get_video, axis=1)
-    except:
-        perror("unable to process visual data")
-        exit(1)
+    total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+    sample_rate = 32
+    threads = []
+    frame_indicies = list(range(0, total_frames, sample_rate))
+    num_threads = 4 # num_threads is the number of worker threads to read video frame
+    tasks = [[] for _ in range(0, num_threads)] # store frame number for each threads
+    frame_per_thread = math.ceil(len(frame_indicies) / num_threads)
 
-    tqdm.pandas(desc="Running Inference")
-    try:
-        df['vision_classification'] = df.progress_apply(get_classification, axis=1)
-    except:
-        perror('unable to complete inference')
-        exit(1)
+    for i, frame_num in enumerate(frame_indicies):
+        tasks[math.floor(i / frame_per_thread)].append(frame_num)
+    for _ in range(0, num_threads):
+        w = Worker()
+        threads.append(w) 
+        w.start()
 
-    # export
-    df.to_csv(output_dir + output_file, columns=["start_time", "end_time", "start_frame", "end_frame", "vision_classification", "avg_fps"], index=False) 
+    results = queue.Queue(maxsize=1000) 
+    on_done = lambda x: results.put(x)
+
+    for i, w in enumerate(threads):
+        w.decode(input_file, tasks[i], on_done)
+
+    completed_threads = 0
+    while completed_threads < num_threads:
+        try:
+            image = results.get(timeout=2)
+        except queue.Empty:
+            completed_threads += 1
+        else:
+            print(image)
 
     print("vision preprocessing complete")
+
+    # export
+    #df.to_csv(output_dir + output_file, columns=["start_time", "end_time", "start_frame", "end_frame", "vision_classification", "avg_fps"], index=False) 
+
+def main():
+    preprocess_vision(input_file="../cache/test1.mp4", output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
+
+if __name__ == "__main__":
+    main()
