@@ -9,6 +9,7 @@ def preprocess_all(input_file, text_output_file, vision_output_file, output_dir)
         preprocess_text(input_file=input_file, output_file=text_output_file, output_dir=output_dir)
     else:
         print("found " + text_output_file + " in cache. loading...")
+
     if not os.path.isfile(output_dir+vision_output_file):
         preprocess_vision(input_file=input_file, output_file=vision_output_file, output_dir=output_dir)
     else:
@@ -23,14 +24,13 @@ def preprocess_all(input_file, text_output_file, vision_output_file, output_dir)
 
     df = pd.concat([df_text, df_vision])
 
+    print(df.info)
+
     df.set_index('start_time', inplace=True)
     df.sort_index(inplace=True)
 
-    # FIXME HUGE SCARY PANDAS SAYS this is DEPRECATEd THIS but i cant find a better solution right now my brain is scrambled
+    # FIXME pandas deprecated function
     df.fillna(method='bfill', inplace=True)
-
-    # drop avg_fps
-    df = df.drop(columns=['avg_fps'])
 
     df.to_csv(output_dir + "out_preprocessing.csv", index=True) 
     print("preprocessing complete")

@@ -17,7 +17,7 @@ PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
 # weighted dataset
 WEIGHTED_OUTPUT_FILE = 'out_weighted.csv'
 
-def setup(reset=True):
+def setup(reset=False):
     if reset:
         try:
             pass

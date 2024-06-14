@@ -89,7 +89,7 @@ def preprocess_vision(input_file, output_file, output_dir, num_threads=4, sample
                 hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
                 curr = get_avg_pixel_val(hsv)
                 if backref:
-                    res.append(abs(curr-backref)) 
+                    res.append((curr-backref) / 1000)  # vision score
                     backref = curr
                 else:
                     res.append(0)
@@ -98,7 +98,8 @@ def preprocess_vision(input_file, output_file, output_dir, num_threads=4, sample
             except queue.Empty:
                 completed_threads += 1
                 pbar.update(1)
-    
+
     df = pd.DataFrame({'start_frame': frame_indicies, 'vision_score': res})
+    df['start_time'] = df['start_frame'].apply((lambda x: x / fps))
     df.to_csv(output_dir + output_file, index=False) 
     print("vision preprocessing complete")
