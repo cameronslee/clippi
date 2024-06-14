@@ -28,14 +28,13 @@ def preprocess_all(input_file, text_output_file, audio_output_file, vision_outpu
 
     df = pd.concat([df_text, df_vision])
 
+    print(df.info)
+
     df.set_index('start_time', inplace=True)
     df.sort_index(inplace=True)
 
-    # FIXME HUGE SCARY PANDAS SAYS this is DEPRECATEd THIS but i cant find a better solution right now my brain is scrambled
+    # FIXME pandas deprecated function
     df.fillna(method='bfill', inplace=True)
-
-    # drop avg_fps
-    df = df.drop(columns=['avg_fps'])
 
     df.to_csv(output_dir + "out_preprocessing.csv", index=True) 
     print("preprocessing complete")
