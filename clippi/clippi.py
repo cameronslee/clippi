@@ -43,7 +43,7 @@ def usage():
     print(usage_string)
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         usage()
         exit(1)
 
@@ -63,8 +63,7 @@ def main():
 
     match cmd:
         case "run":
-            # setup cache dir
-            setup(reset=True)
+            # setup cache dir     
             preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, audio_output_file=AUDIO_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             make_clips(video_file=arg1, input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_dir=CLIPPED_OUTPUT_DIR, num_clips=arg2, lower_bound=arg3, upper_bound=arg4)
