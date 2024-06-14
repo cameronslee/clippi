@@ -12,6 +12,7 @@ CLIPPED_OUTPUT_DIR = CACHE_DIR + "./clips/"
 # preprocessing file handles
 VISION_OUTPUT_FILE = 'out_vision_preprocessing.csv'
 TEXT_OUTPUT_FILE = 'out_text_preprocessing.csv'
+AUDIO_OUTPUT_FILE = 'out_audio_preprocessing.csv'
 # working dataset
 PREPROCESSING_OUTPUT_FILE = 'out_preprocessing.csv'
 # weighted dataset

@@ -20,7 +20,7 @@ from helpers import clear_cache, perror
 from preprocessing import preprocess_all
 from weight import weight_clips
 from clipper import make_clips
-from conf import setup, PREPROCESSING_OUTPUT_DIR, CLIPPED_OUTPUT_DIR, VISION_OUTPUT_FILE, TEXT_OUTPUT_FILE, PREPROCESSING_OUTPUT_FILE, WEIGHTED_OUTPUT_FILE
+from conf import setup, PREPROCESSING_OUTPUT_DIR, CLIPPED_OUTPUT_DIR, VISION_OUTPUT_FILE, TEXT_OUTPUT_FILE, AUDIO_OUTPUT_FILE, PREPROCESSING_OUTPUT_FILE, WEIGHTED_OUTPUT_FILE
 
 usage_string = """
 usage: clippi [-h | --help] <command> [<args>] 
@@ -63,9 +63,8 @@ def main():
 
     match cmd:
         case "run":
-            # setup cache dir
-            setup(reset=False)
-            preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
+            # setup cache dir     
+            preprocess_all(input_file=arg1, text_output_file=TEXT_OUTPUT_FILE, audio_output_file=AUDIO_OUTPUT_FILE, vision_output_file=VISION_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             weight_clips(input_file=PREPROCESSING_OUTPUT_DIR+PREPROCESSING_OUTPUT_FILE, output_file=WEIGHTED_OUTPUT_FILE, output_dir=PREPROCESSING_OUTPUT_DIR)
             make_clips(video_file=arg1, input_file=PREPROCESSING_OUTPUT_DIR+WEIGHTED_OUTPUT_FILE, output_dir=CLIPPED_OUTPUT_DIR, num_clips=arg2, lower_bound=arg3, upper_bound=arg4)
         case "clear_cache":
