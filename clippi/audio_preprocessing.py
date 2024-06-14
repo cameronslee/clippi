@@ -2,42 +2,20 @@ import os
 import sys
 import shutil
 import pandas as pd
+import numpy as np
+
 from tqdm import tqdm
 from pydub import AudioSegment
-
-### === Helpers === ###
-def perror(msg):
-    print("error: " + msg)
-
-def touch(path):
-    with open(path, 'a') as f:
-        os.utime(path, None) # set access and modified times
-        f.close()
-
-def mkdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-        return path
-
-    print("path already exists")
-    return
+from helpers import perror
+from mediapipe.tasks import python
+from mediapipe.tasks.python.components import containers
+from mediapipe.tasks.python import audio
+from scipy.io import wavfile
 
 def mp3_to_wav(input_file, output_file):
-    audio = AudioSegment.from_mp3(input_file)
+    audio = AudioSegment.from_file(input_file)
+    audio.set_frame_rate(16000)
     audio.export(output_file, format="wav")
-
-def split_audio(input_file, output_dir, duration_ms):
-    audio = AudioSegment.from_wav(input_file)
-    num_clips = len(audio) // duration_ms
-
-    for i in range(num_clips):
-        start_time = i * duration_ms
-        end_time = (i + 1) * duration_ms
-        clip = audio[start_time:end_time]
-
-        #build output file path from output_dir + input file
-        output_file = os.path.join(output_dir, f"{os.path.splitext(input_file)[0].rsplit('/', 1)[-1]}_clip_{i+1}.wav")
-        clip.export(output_file, format="wav")
 
 usage_string = """
 usage: text_preprocessing <filename>              perform preprocessing
@@ -45,53 +23,45 @@ usage: text_preprocessing <filename>              perform preprocessing
 def usage():
     print(usage_string)
 
-# Transcript
-INPUT_DIR = './input_data/'
-
 # Driver
-def main():
-    if (len(sys.argv)) < 2:
-        usage()
-        exit(1)
+def preprocess_audio(input_file, output_file, output_dir):
+    basename, extension = os.path.splitext( os.path.basename(input_file))
+    print("Audio preprocessing: " + input_file + "...")
 
-    INPUT_FILE = sys.argv[1]
-    root, extension  = os.path.splitext(INPUT_FILE)
-    OUTPUT_DIR = './cache/' + root + '/' # target output for preoprocessing is cache
-    OUTPUT_FILE = OUTPUT_DIR + root + ".wav"
-    CLIPS_DIR = OUTPUT_DIR + root + '_clips/'
-    mkdir(OUTPUT_DIR)   # create subdirectory in cache
-
-    print("Processing: " + INPUT_FILE)
-
-    if not os.path.isfile(INPUT_DIR + INPUT_FILE):  # specified file not found
-        perror("unable to process input file " + str(INPUT_FILE))
-        exit(1)
-
-    # if mp3, check cache and convert to wav if needed
-    if extension != '.wav' and not os.path.isfile(OUTPUT_FILE):
-        print(f"converting {INPUT_FILE} to .wav ...")
+    # convert to wav, place in cache
+    if not os.path.isfile(output_dir + basename + '.wav'):
         try:
-            mp3_to_wav(INPUT_DIR + INPUT_FILE, OUTPUT_FILE)
+            mp3_to_wav(input_file, output_dir + basename + '.wav')
         except:
-            perror(f"unable to convert input file '{INPUT_FILE}' to .wav")
-            #exit(1)
+            perror(f"unable to convert input file '{input_file}' to .wav")
+            exit(1)
+            
+    df = pd.DataFrame()
 
-    if os.path.isdir(CLIPS_DIR): # clear prev clips
-        shutil.rmtree(CLIPS_DIR)
+    # Customize and associate model for Classifier
+    base_options = python.BaseOptions(model_asset_path='./clippi/classifier.tflite')
+    options = audio.AudioClassifierOptions(
+        base_options=base_options, max_results=4)
 
-    mkdir(CLIPS_DIR)
-    split_audio(OUTPUT_FILE, CLIPS_DIR, 3000)   # specify clip length in ms
+    # create classifier, segment audio clips, and classify
+    with audio.AudioClassifier.create_from_options(options) as classifier:
+        sample_rate, wav_data = wavfile.read(output_dir + basename + '.wav')
+        audio_clip = containers.AudioData.create_from_array(
+            wav_data.astype(float) / np.iinfo(np.int16).max, sample_rate)
+        classification_result_list = classifier.classify(audio_clip)
 
-    # try:
-    #     # TODO find appropriate model for audio classification
-    #     # process data, place into dataframe with beginning and end timestamps, audio appropriate labels
+        total_duration_ms = int(((len(wav_data) / sample_rate) * 1000))
+        timestamps = [i for i in range(0, total_duration_ms, 975)]
 
-    # except:
-    #     perror("unable to create dataset")
-    #     exit(1)
+        # insert clips into dataframe
+        for idx, timestamp in enumerate(timestamps):
+            classification_result = classification_result_list[idx]
+            top_category = classification_result.classifications[0].categories[0]
+            df = df._append({
+                'start_time': round(timestamp / 1000, 2),
+                'end_time': round((timestamp + 975) / 1000, 2),
+                'classification': top_category.category_name,
+                'confidence': round(top_category.score, 2),  
+            }, ignore_index=True)
 
-    # Export
-    #df.to_csv(OUTPUT_DIR + root + '_out_text_preprocessing.csv', index=False) 
-
-if __name__ == "__main__":
-    main()
+        df.to_csv(output_dir + output_file, columns=['start_time', 'end_time', 'classification', 'confidence'], index=True)
