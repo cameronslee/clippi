@@ -23,7 +23,8 @@ def mss(df):
         if global_max > curr_max:
             curr_max = global_max
             curr_end_time = row['end_time']
-            res.append((curr_start_time, curr_end_time, (curr_end_time - curr_start_time), global_max))
+            curr_frame_start = row['start_frame']
+            res.append((curr_start_time, curr_end_time, curr_frame_start, (curr_end_time - curr_start_time), global_max))
 
         if global_max < 0:
             global_max = 0
@@ -41,7 +42,7 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
     try:
         clips = mss(df)
         if lower_bound != 0 and upper_bound != 0:
-            clips = [i for i in clips if i[2] >= lower_bound and i[2] <= upper_bound]
+            clips = [i for i in clips if i[3] >= lower_bound and i[3] <= upper_bound]
         if num_clips > 0:
             if num_clips < len(clips):
                 clips = clips[:num_clips] # we return the 'top num_clips' clips
@@ -49,7 +50,7 @@ def make_clips(video_file, input_file, output_dir, lower_bound=0.0, upper_bound=
         perror("could not calculate clip weights") 
         exit(1)
 
-    clips_df = pd.DataFrame(clips, columns=['start_time', 'end_time', 'duration', 'weight']) 
+    clips_df = pd.DataFrame(clips, columns=['start_time', 'end_time', 'start_frame', 'duration', 'weight']) 
     clips_df.to_csv(output_dir+"indices.csv")
 
     if video_generation:
